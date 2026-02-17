@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"runtime"
+
+	"cloaq/src/network"
 )
 
 func main() {
@@ -24,8 +27,34 @@ func main() {
 }
 
 func runCommand() {
-	fmt.Println("Running Cloaq")
+	fmt.Println("Starting Cloaq...")
+	fmt.Println("GOOS:", runtime.GOOS, "GOARCH:", runtime.GOARCH)
 
+	tun, err := network.InitTunnel()
+	if err != nil {
+		fmt.Println("Tunnel init error:", err)
+		return
+	}
+
+	if tun == nil {
+		fmt.Println("Tunnel initialized (no device object returned on this OS yet).")
+		fmt.Println("Cloaq running.")
+		select {}
+	}
+
+	defer tun.Close()
+	fmt.Println("Tunnel ready:", tun.Name())
+
+	if err := tun.Start(); err != nil {
+		fmt.Println("Tunnel start error:", err)
+		return
+	}
+
+	fmt.Println("Reading packets from tunnel...")
+	if err := network.ReadLoop(tun); err != nil {
+		fmt.Println("ReadLoop error:", err)
+		return
+	}
 }
 
 func helpCommand() {
