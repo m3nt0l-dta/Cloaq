@@ -1,3 +1,7 @@
+// NOTICE
+// Project Name: Cloaq
+// Copyright © 2026 Neil Talap and/or its designated Affiliates.
+
 package main
 
 import (
