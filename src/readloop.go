@@ -12,7 +12,7 @@
 // For commercial licensing inquiries or permissions beyond the scope of this
 // license, please create an issue in github.
 
-package main
+package network
 
 import (
 	"log"
