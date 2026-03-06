@@ -15,9 +15,14 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"os"
 	"runtime"
+	"time"
+
+	_ "flag"
 
 	"cloaq/src/tun"
 
@@ -47,6 +52,13 @@ func runCommand() {
 	log.Println("Starting Cloaq...")
 	log.Println("GOOS:", runtime.GOOS, "GOARCH:", runtime.GOARCH)
 
+	port := flag.Int("port", 8080, "Port to listen on")
+	peers := flag.String("peers", "", "Comma-separated list of peer addresses")
+
+	flag.CommandLine.Parse(os.Args[2:])
+
+	fmt.Printf("Starting Cloaq on port %d...\n", *port)
+
 	// Initialize the identity for this node
 	identity, err := network.GenerateIdentity()
 	if err != nil {
@@ -70,6 +82,9 @@ func runCommand() {
 	}
 
 	log.Println("Reading packets from the VNIC...")
+
+	startMonitor()
+	log.Println("Monitor started")
 
 	// Read packets from VNIC
 	go func() {
@@ -97,4 +112,18 @@ func helpCommand() {
 
 func settingsCommand() {
 	log.Println("settings text")
+}
+
+func startMonitor() {
+	go func() {
+		var m runtime.MemStats
+		for {
+			runtime.ReadMemStats(&m)
+
+			log.Printf("[MONITOR] Alloc: %v MB, Sys: %v MB, Goroutines: %v",
+				m.Alloc/1024/1024, m.Sys/1024/1024, runtime.NumGoroutine())
+
+			time.Sleep(10 * time.Second)
+		}
+	}()
 }

@@ -45,3 +45,12 @@ func ReadLoop(dev tun.Device) error {
 		}
 	}
 }
+
+func safeRuntime(name string, fn func()) {
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("[RECOVERY] %s panicked: %v", name, r)
+		}
+	}()
+	fn()
+}
